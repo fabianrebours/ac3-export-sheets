@@ -191,7 +191,7 @@ def upload_to_google_sheets(df):
 
     # Authentification
     scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-    cred_path = os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
+    cred_path = "/etc/secrets/credentials.json"
     credentials = Credentials.from_service_account_file(cred_path, scopes=scopes)
 
     # Ouvre le Google Sheet
