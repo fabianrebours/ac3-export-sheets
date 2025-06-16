@@ -1,0 +1,10 @@
+services:
+  - type: cron
+    name: export-ac3-gsheet
+    schedule: "0 11 * * *"
+    runtime: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python export_biens_gsheet.py"
+    envVars:
+      - key: GOOGLE_APPLICATION_CREDENTIALS
+        value: credentials.json
