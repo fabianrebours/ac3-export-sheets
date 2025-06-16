@@ -190,7 +190,7 @@ def upload_to_google_sheets(df):
 
     # Authentification
     scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-    credentials = Credentials.from_service_account_file("/Users/fabian/cron_jobs/credentials.json", scopes=scopes)
+    credentials = Credentials.from_service_account_file("credentials.json", scopes=scopes)
     gc = gspread.authorize(credentials)
 
     # Ouvre le Google Sheet
