@@ -193,6 +193,7 @@ def upload_to_google_sheets(df):
     scopes = ["https://www.googleapis.com/auth/spreadsheets"]
     cred_path = "/etc/secrets/credentials.json"
     credentials = Credentials.from_service_account_file(cred_path, scopes=scopes)
+    gc = gspread.authorize(credentials)
 
     # Ouvre le Google Sheet
     sh = gc.open_by_key(SPREADSHEET_ID)
