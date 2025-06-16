@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # export_biens_to_gsheet.py
 
+import os
 import requests
 import json
 import pandas as pd
@@ -190,8 +191,8 @@ def upload_to_google_sheets(df):
 
     # Authentification
     scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-    credentials = Credentials.from_service_account_file("credentials.json", scopes=scopes)
-    gc = gspread.authorize(credentials)
+    cred_path = os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
+    credentials = Credentials.from_service_account_file(cred_path, scopes=scopes)
 
     # Ouvre le Google Sheet
     sh = gc.open_by_key(SPREADSHEET_ID)
