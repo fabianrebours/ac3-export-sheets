@@ -199,17 +199,22 @@ def upload_to_google_sheets(df):
     sh = gc.open_by_key(SPREADSHEET_ID)
     worksheet = sh.worksheet(GOOGLE_SHEET_TAB)
 
-    # Ajoute la date d'export en A1
-    export_date_str = f"Date Export : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-    worksheet.update("A1", [[export_date_str]])
-    print(f"🕒 {export_date_str}")
+    # ⚠️ On NE met plus rien en A1 dans "Biens"
+    # On vide la feuille (tout)
+    worksheet.clear()
 
-    # On vide la feuille (sauf A1)
-    worksheet.resize(rows=2)
+    # Upload du dataframe à partir de A1
+    set_with_dataframe(worksheet, df, row=1, include_column_header=True, resize=True)
 
-    # Upload du dataframe à partir de A2
-    set_with_dataframe(worksheet, df, row=2, include_column_header=True, resize=True)
+    # 👉 Date d’export dans une feuille séparée "Meta"
+    export_date_str = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    try:
+        meta_ws = sh.worksheet("Meta")
+    except gspread.exceptions.WorksheetNotFound:
+        meta_ws = sh.add_worksheet(title="Meta", rows=10, cols=2)
 
+    meta_ws.update("A1", [["Dernière date d'export"], [export_date_str]])
+    print(f"🕒 Export enregistré dans l'onglet 'Meta' : {export_date_str}")
     print("✅ Données envoyées vers Google Sheets")
 
 # MAIN
