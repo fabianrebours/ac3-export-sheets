@@ -74,7 +74,6 @@ def flatten_products(products):
             "status_web": prod.get("status_web"),
         }
 
-        # suivi_par
         suivi = prod.get("suivi_par")
         if suivi:
             row["Suivi_par_nom"] = f"{suivi.get('firstname', '')} {suivi.get('lastname', '')}"
@@ -82,7 +81,6 @@ def flatten_products(products):
             row["Suivi_par_tel"] = suivi.get("phone")
             row["Suivi_par_mobile"] = suivi.get("mobile_phone")
 
-        # cree_par
         cree = prod.get("cree_par")
         if cree:
             row["Cree_par_nom"] = f"{cree.get('firstname', '')} {cree.get('lastname', '')}"
@@ -90,39 +88,23 @@ def flatten_products(products):
             row["Cree_par_tel"] = cree.get("phone")
             row["Cree_par_mobile"] = cree.get("mobile_phone")
 
-        # criteres_text
         for critere in prod.get("criteres_text", []):
-            key = critere.get("critere_name")
-            value = critere.get("critere_value")
-            row[f"[CT] {key}"] = value
+            row[f"[CT] {critere.get('critere_name')}"] = critere.get("critere_value")
 
-        # criteres_number
         for critere in prod.get("criteres_number", []):
-            key = critere.get("critere_name")
-            value = critere.get("critere_value")
-            row[f"[CN] {key}"] = value
+            row[f"[CN] {critere.get('critere_name')}"] = critere.get("critere_value")
 
-        # criteres_fulltext
         for critere in prod.get("criteres_fulltext", []):
-            key = critere.get("critere_name")
-            value = critere.get("critere_value")
-            row[f"[FT] {key}"] = value
+            row[f"[FT] {critere.get('critere_name')}"] = critere.get("critere_value")
 
-        # products_photos
         photos = prod.get("products_photos", [])
-        photo_urls = [photo.get("chemin") for photo in photos if photo.get("chemin")]
-        row["Photos"] = "; ".join(photo_urls)
+        row["Photos"] = "; ".join([p.get("chemin") for p in photos if p.get("chemin")])
 
-        # rooms
-        rooms = prod.get("rooms", [])
         rooms_desc = []
-        for room in rooms:
-            room_type = room.get("type_piece", "Inconnu")
-            surface = room.get("surface_piece", "NA")
-            rooms_desc.append(f"{room_type} ({surface} m²)")
+        for room in prod.get("rooms", []):
+            rooms_desc.append(f"{room.get('type_piece', 'Inconnu')} ({room.get('surface_piece', 'NA')} m²)")
         row["Rooms"] = "; ".join(rooms_desc)
 
-        # compromis
         compromis_list = prod.get("compromis", [])
         if compromis_list:
             comp = compromis_list[0]
@@ -133,14 +115,11 @@ def flatten_products(products):
             row["Compromis_date_fin_sru"] = format_date(comp.get("date_fin_sru"))
             row["Compromis_status"] = comp.get("status", {}).get("text")
 
-        # descriptions
         desc_list = prod.get("descriptions", [])
         if desc_list:
-            desc = desc_list[0]
-            row["Description_title"] = desc.get("title")
-            row["Description_text"] = desc.get("description")
+            row["Description_title"] = desc_list[0].get("title")
+            row["Description_text"] = desc_list[0].get("description")
 
-        # customer
         customer = prod.get("customer")
         if customer:
             row["Customer_nom"] = f"{customer.get('firstname', '')} {customer.get('lastname', '')}"
@@ -150,29 +129,19 @@ def flatten_products(products):
             row["Customer_next_contact"] = format_date(customer.get("next_contact"))
             row["Customer_last_action"] = format_date(customer.get("last_action"))
 
-        # category
         category = prod.get("category")
         if category:
             row["Category_name"] = category.get("name")
 
-        # themes
-        themes = prod.get("themes", [])
-        row["Themes"] = "; ".join([theme.get("theme_name") for theme in themes if theme.get("theme_name")])
+        row["Themes"] = "; ".join([t.get("theme_name") for t in prod.get("themes", []) if t.get("theme_name")])
 
-        # insee
-        insee = prod.get("insee")
+        insee = prod.get("insee", {})
         if isinstance(insee, dict):
             row["INSEE_code_insee"] = insee.get("code_insee")
             row["INSEE_commune"] = insee.get("commune")
             row["INSEE_arrondissement"] = insee.get("arrondissement")
             row["INSEE_secteur"] = insee.get("secteur")
-        else:
-            row["INSEE_code_insee"] = None
-            row["INSEE_commune"] = None
-            row["INSEE_arrondissement"] = None
-            row["INSEE_secteur"] = None
 
-        # statistic
         statistic = prod.get("statistic")
         if statistic:
             row["Statistic_nb_vues"] = statistic.get("nb_vues")
@@ -183,36 +152,55 @@ def flatten_products(products):
 
     df = pd.DataFrame(rows)
     print(f"✅ {len(df)} lignes construites")
+
+    # 🔒 Ordre stable des colonnes
+    # Liste à adapter si besoin — tronquée ici pour lisibilité
+    column_order = [
+        "id", "customers_id", "price", "created_at", "last_modified", "model", "status_web",
+        "Suivi_par_nom", "Suivi_par_email", "Suivi_par_tel", "Suivi_par_mobile",
+        "Cree_par_nom", "Cree_par_email", "Cree_par_tel", "Cree_par_mobile",
+        "Photos", "Rooms", "Description_title", "Description_text",
+        "Customer_nom", "Customer_email", "Customer_tel", "Customer_creation_date",
+        "Customer_next_contact", "Customer_last_action", "Category_name", "Themes",
+        "INSEE_code_insee", "INSEE_commune", "INSEE_arrondissement", "INSEE_secteur",
+        "Statistic_nb_vues", "Statistic_nb_contacts", "Statistic_nb_visites",
+        "Compromis_date_compromis", "Compromis_date_acte", "Compromis_date_offre",
+        "Compromis_date_annulation", "Compromis_date_fin_sru", "Compromis_status"
+    ]
+
+    # Ajouter toutes les autres colonnes dynamiques
+    other_cols = [col for col in df.columns if col not in column_order]
+    df = df.reindex(columns=column_order + sorted(other_cols))
+
     return df
+
 
 # 4️⃣ Envoyer vers Google Sheets
 def upload_to_google_sheets(df):
     print("📤 Upload vers Google Sheets...")
 
-    # Authentification
     scopes = ["https://www.googleapis.com/auth/spreadsheets"]
     cred_path = "/etc/secrets/credentials.json"
     credentials = Credentials.from_service_account_file(cred_path, scopes=scopes)
     gc = gspread.authorize(credentials)
 
-    # Ouvre le Google Sheet
     sh = gc.open_by_key(SPREADSHEET_ID)
     worksheet = sh.worksheet(GOOGLE_SHEET_TAB)
 
-    # 🔄 Vide entièrement la feuille "Biens"
-    worksheet.clear()
+    # ✅ Ne supprime pas tout : garde l'en-tête (ligne 1)
+    worksheet.resize(rows=1)
 
-    # 📥 Upload du dataframe à partir de A1 avec en-têtes
+    # 📝 Réécrit proprement les données (en-têtes + lignes)
     set_with_dataframe(worksheet, df, row=1, include_column_header=True, resize=True)
 
-    # 📅 Enregistre la date d’export dans un onglet séparé "Meta"
+    # 🕒 Date dans "Meta"
     export_date_str = f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
     try:
         meta_ws = sh.worksheet("Meta")
     except gspread.exceptions.WorksheetNotFound:
         meta_ws = sh.add_worksheet(title="Meta", rows=10, cols=2)
-
     meta_ws.update("A1", [["Dernière date d'export"], [export_date_str]])
+
     print(f"🕒 Export enregistré dans l'onglet 'Meta' : {export_date_str}")
     print("✅ Données envoyées vers Google Sheets")
 
