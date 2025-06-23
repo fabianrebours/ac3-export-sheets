@@ -366,12 +366,6 @@ def flatten_products(products):
         "[CN] Hauteur sous plafond",
         "[CN] Estimation du coût annuel des énergies pour un usage standard (DPE réalisé avant le 01/07/2021)",
         "[CN] Quote part de charges",
-        "Compromis_date_compromis",
-        "Compromis_date_acte",
-        "Compromis_date_offre",
-        "Compromis_date_annulation",
-        "Compromis_date_fin_sru",
-        "Compromis_status",
         "[CT] Porte",
         "[CT] N° Digicode",
         "[CT] Heures de Visite",
@@ -407,6 +401,12 @@ def flatten_products(products):
         "[CT] Référence Affaire",
         "[CT] Nom Résidence",
         "[FT] Consignes/Itinéraires",
+        "Compromis_date_compromis",
+        "Compromis_date_acte",
+        "Compromis_date_offre",
+        "Compromis_date_annulation",
+        "Compromis_date_fin_sru",
+        "Compromis_status",
     ]
 
 
